@@ -12,30 +12,31 @@
 
 > [!IMPORTANT]
 > **Architectural Scope & Honest Pre-Tapeout Disclosure:**
-> This design is a **pure digital CMOS DSP Engine** (`sky130_fd_sc_hd`). The ADC/DAC interfaces are 16-bit digital buses (`io_in`/`io_out`) designed to interface with external ultra-high-speed converters on the PCB. The 2.4 GSps direct-RF specification represents the mathematical target architecture for a future SiGe BiCMOS port; this Sky130 implementation is expected to operate at standard digital logic clock speeds (~50?"100 MHz) until silicon validation is performed. No RF ENOB, SNR, or physical power metrics are claimed prior to fabrication.
+> This design is a **pure digital CMOS DSP Engine** (sky130_fd_sc_hd). The ADC/DAC interfaces are 16-bit digital buses (io_in/io_out) designed to interface with external ultra-high-speed converters on the PCB. The 2.4 GSps direct-RF specification represents the mathematical target architecture for a future SiGe BiCMOS port; this Sky130 implementation is expected to operate at standard digital logic clock speeds (~50?"100 MHz) until silicon validation is performed. No RF ENOB, SNR, or physical power metrics are claimed prior to fabrication.
 
 ## 1. Project Overview
 
-The **Cognitive Direct-RF Transceiver** is a massively pipelined digital signal processing (DSP) core designed for next-generation Software Defined Radios. Hardened as a single macro (`phase_099_top_integration`) and fully integrated into the Efabless Caravel harness, it implements 100 sequential verification phases of advanced communications IP.
+The **Cognitive Direct-RF Transceiver** is a massively pipelined digital signal processing (DSP) core designed for next-generation Software Defined Radios. Hardened as a single macro (phase_099_top_integration) and fully integrated into the Efabless Caravel harness, it implements 100 sequential verification phases of advanced communications IP.
 
 ### Key Specifications
 
 | Parameter | Specification | Implementation Details |
 |-----------|---------------|------------------------|
-| **PDK Target** | SkyWater 130nm | `sky130_fd_sc_hd` high-density standard cells |
-| **Macro Area** | 1200 µm × 1200 µm | Dense DSP routing, OpenLane hardened |
-| **Wrapper Area** | 2920 µm × 3520 µm | Standard Caravel `user_project_wrapper` |
+| **PDK Target** | SkyWater 130nm | sky130_fd_sc_hd high-density standard cells |
+| **Macro Area** | 1200 �m � 1200 �m | Dense DSP routing, OpenLane hardened |
+| **Wrapper Area** | 2920 �m � 3520 �m | Standard Caravel user_project_wrapper |
 | **Logic Density** | 30,615 Gates | Pipelined arithmetic, multiply-accumulate |
-| **State Elements** | 3,142 Flip-Flops | Deep pipeline registers for high-speed $f_{max}$ |
+| **State Elements** | 3,142 Flip-Flops | Deep pipeline registers for high-speed {max}$ |
 | **Verification** | 491 Pytest Suites | 100% Zero-Regression passing status |
 | **Signoff Status** | Efabless Precheck | 14/14 checks passed (DRC/LVS/STA clean) |
 
-## 2. Comprehensive System Architecture
+## 2. Comprehensive System Architectures
 
-The following diagram maps the complete dataflow from the external I/O pins, through the complex RF transmission and reception paths, and up to the management SoC.
+### 2.1 Top-Level SoC & Caravel Harness Integration
+This diagram maps the complete physical dataflow from the external I/O pins, through the Wishbone interconnect, and into the DSP wrapper.
 
-```mermaid
-graph TB
+`mermaid
+flowchart TB
     subgraph SOC["Caravel SoC Harness (Efabless)"]
         CPU[PicoRV32 Management Core]
         WB[Wishbone Interconnect]
@@ -45,25 +46,20 @@ graph TB
         CPU -.-> LA
     end
 
-    subgraph UPA["User Project Wrapper"]
+    subgraph UPA["User Project Wrapper (Macro)"]
         subgraph DSP_ENGINE["Cognitive Direct-RF Transceiver DSP"]
             AXI_CTRL[AXI-Lite Config Register File]
             
-            subgraph RX_PATH["Receive Path (RX)"]
+            subgraph RX_PATH["Receive Pipeline (RX)"]
                 DDC[Digital Down Converter]
                 AGC[Auto Gain Control]
                 CORDIC_RX[CORDIC Phase Rotator]
                 FFT[256-point FFT Engine]
-                DEMOD[QAM Demodulator]
-                VITERBI[Viterbi Decoder]
             end
             
-            subgraph TX_PATH["Transmit Path (TX)"]
-                QAM[QAM Modulator]
+            subgraph TX_PATH["Transmit Pipeline (TX)"]
                 IFFT[256-point IFFT Engine]
-                CORDIC_TX[CORDIC Modulator]
                 DPD[Cognitive DPD Neural Net]
-                CFR[Crest Factor Reduction]
                 DUC[Digital Up Converter]
             end
             
@@ -71,25 +67,25 @@ graph TB
         end
     end
     
-    subgraph IO["External Physical I/O"]
-        ADC[External RF ADC<br/>16-bit io_in]
-        DAC[External RF DAC<br/>16-bit io_out]
-        CLK[External High-Speed Clock<br/>user_clock2]
+    subgraph IO["External Physical I/O Pads"]
+        ADC[External RF ADC 16-bit]
+        DAC[External RF DAC 16-bit]
+        CLK[High-Speed Clock Pin]
     end
 
-    WB <-->|Configuration & Firmware Debug| WB_SLAVE
-    WB_SLAVE <--> AXI_CTRL
+    WB --- WB_SLAVE
+    WB_SLAVE --- AXI_CTRL
     AXI_CTRL -.-> RX_PATH
     AXI_CTRL -.-> TX_PATH
     
-    ADC -->|16-bit I/Q| DDC
-    DDC --> AGC --> CORDIC_RX --> FFT --> DEMOD --> VITERBI
+    ADC --> DDC
+    DDC --> AGC --> CORDIC_RX --> FFT
     
-    QAM --> IFFT --> CORDIC_TX --> DPD --> CFR --> DUC
-    DUC -->|16-bit I/Q| DAC
+    IFFT --> DPD --> DUC
+    DUC --> DAC
     CLK --> DSP_ENGINE
     
-    DSP_ENGINE -->|Status & Triggering| LA
+    DSP_ENGINE -.-> LA
 
     style SOC fill:#f9f2ec,stroke:#b08968,stroke-width:2px
     style UPA fill:#f0f7f4,stroke:#2b9348,stroke-width:2px
@@ -97,9 +93,74 @@ graph TB
     style RX_PATH fill:#e1f5ff,stroke:#023e8a,stroke-width:2px
     style TX_PATH fill:#ffe1e1,stroke:#c1121f,stroke-width:2px
     style IO fill:#e9ecef,stroke:#495057
-```
+`
 
-### System Components Overview
+### 2.2 Deep Signal Processing Pipeline
+The 100-phase DSP architecture handles mathematically intense floating-point emulation using pipelined fixed-point arithmetic.
+
+`mermaid
+flowchart LR
+    subgraph RX["Receive Digital Baseband"]
+        IN1[Raw ADC Samples] --> CIC_DEC[CIC Decimator]
+        CIC_DEC --> FIR_RX[FIR Compensation]
+        FIR_RX --> QAM_DEMOD[QAM Demodulator]
+        QAM_DEMOD --> VIT[Viterbi Decoder]
+        VIT --> PKT_RX[Packet Parser]
+    end
+
+    subgraph TX["Transmit Digital Baseband"]
+        PKT_TX[MAC Framer] --> RS_ENC[Reed-Solomon]
+        RS_ENC --> QAM_MOD[QAM Modulator]
+        QAM_MOD --> FIR_TX[FIR Interpolator]
+        FIR_TX --> CIC_INC[CIC Interpolator]
+        CIC_INC --> OUT1[DAC Samples]
+    end
+
+    style RX fill:#e6f2ff,stroke:#00509e,stroke-width:2px
+    style TX fill:#fff0f3,stroke:#c1121f,stroke-width:2px
+`
+
+### 2.3 Cognitive Neural Processing Unit (NPU) Architecture
+To solve the nonlinear power amplifier (PA) distortion inherent in RF transmissions, this chip includes a lightweight Hardware Neural Network.
+
+`mermaid
+flowchart TD
+    subgraph NPU["Digital Predistortion (DPD) NPU"]
+        IN[Baseband I/Q Signal]
+        
+        subgraph L1["Hidden Layer 1"]
+            M1[MAC Array] --> A1[ReLU Activation]
+        end
+        
+        subgraph L2["Hidden Layer 2"]
+            M2[MAC Array] --> A2[ReLU Activation]
+        end
+        
+        subgraph L3["Output Layer"]
+            M3[MAC Array] --> OUT[Linearized I/Q Signal]
+        end
+        
+        IN --> L1
+        L1 --> L2
+        L2 --> L3
+    end
+    
+    subgraph MEM["Weight Storage"]
+        SRAM[Local Parameter SRAM]
+    end
+    
+    SRAM -.-> M1
+    SRAM -.-> M2
+    SRAM -.-> M3
+
+    style NPU fill:#f8f9fa,stroke:#343a40,stroke-width:2px
+    style L1 fill:#e9ecef,stroke:#495057
+    style L2 fill:#e9ecef,stroke:#495057
+    style L3 fill:#e9ecef,stroke:#495057
+    style MEM fill:#ffedd8,stroke:#fca311
+`
+
+## 3. System Components Breakdown
 
 | Component | Specification | Implementation | Strategic Benefits |
 |-----------|---------------|----------------|--------------------|
@@ -108,49 +169,38 @@ graph TB
 | **Error Correction** | Viterbi Decoder | Pipelined hard-decision FEC | Provides extreme resilience in noisy RF channel environments. |
 | **AI Predistortion** | Cognitive NPU (DPD) | Lightweight hardware neural network | Linearizes external non-linear RF power amplifiers in real-time, boosting transmission efficiency. |
 
-## 3. Implementation & Timeline Recap
+## 4. Implementation & Timeline Recap
 
 - **Phase 1 (DSP Foundation):** Initialized the mathematical digital down-conversion, multirate filtering (CIC/FIR), and CORDIC blocks.
 - **Phase 2 (Cognitive NPU Integration):** Integrated the digital predistortion (DPD) neural network for RF linearization.
 - **Phase 3 (SoC Bus Integration):** Mapped the massive 100-phase pipeline into the Caravel Wishbone interface using an AXI-Lite translation layer.
-- **Phase 4 (Physical Design):** Executed the full OpenLane ASIC flow, resolved massive routing congestion, and generated the final `user_project_wrapper.gds`.
+- **Phase 4 (Physical Design):** Executed the full OpenLane ASIC flow, resolved massive routing congestion, and generated the final user_project_wrapper.gds.
 - **Phase 5 (Signoff):** Passed Efabless MPW precheck with absolute zero DRC and LVS violations.
 
-## 4. Technical Challenges & Resolutions
+## 5. Technical Challenges & Resolutions
 
-- **Timing & Congestion Closure:** Routing a massively pipelined FFT and Neural Network inside a tiny `1200x1200um` bounding box caused severe OpenROAD routing congestion. **Resolution:** We inserted deep pipeline registers to artificially break combinatorial paths and utilized highly conservative SDC constraints to ensure timing closure across all PVT corners.
-- **GitHub Repository Limits:** The final macroscopic Silicon GDS geometries exceeded GitHub's strict 100MB HTTPS limit, crashing the initial commit pushes. **Resolution:** We completely isolated the physical layouts from the internal Efabless harness data (`caravel/` and `mgmt_core_wrapper/`), wiped the git tree, and staged the commits sequentially.
+- **Timing & Congestion Closure:** Routing a massively pipelined FFT and Neural Network inside a tiny 1200x1200um bounding box caused severe OpenROAD routing congestion. **Resolution:** We inserted deep pipeline registers to artificially break combinatorial paths and utilized highly conservative SDC constraints to ensure timing closure across all PVT corners.
+- **GitHub Repository Limits:** The final macroscopic Silicon GDS geometries exceeded GitHub's strict 100MB HTTPS limit, crashing the initial commit pushes. **Resolution:** We completely isolated the physical layouts from the internal Efabless harness data (caravel/ and mgmt_core_wrapper/), wiped the git tree, and staged the commits sequentially.
 - **Verification Confidence:** Testing 100 phases of DSP hardware manually is mathematically impossible. **Resolution:** We developed a strict Zero-Regression protocol utilizing Python Golden Models. The 491 Pytest assertions prove absolute parity between the pure mathematics and the physical silicon gate-level netlists.
 
-## 5. Directory & Artifact Structure
+## 6. Directory & Artifact Structure
 
-```text
+`	ext
 caravel_user_project/
-├── gds/                    # Final GDSII geometric layouts
-│   ├── user_project_wrapper.gds    (86.63 MB)
-│   └── phase_099_top_integration.gds (85.32 MB)
-├── def/                    # DEF floorplans & routing
-├── lef/                    # LEF macro abstracts
-├── verilog/
-│   ├── rtl/                # 100 Phases of Synthesizable SystemVerilog
-│   ├── gl/                 # Post-synthesis gate-level netlists
-│   └── dv/                 # Firmware C-code and Verilog testbenches
-├── openlane/               # OpenLane ASIC configurations (config.json)
-│   └── user_project_wrapper/
-├── signoff/                # Efabless Precheck, LVS, and STA reports
-└── info.yaml               # Efabless machine-readable project metadata
-```
-
-## 6. Verification & Zero-Regression Discipline
-
-This repository strictly adheres to a **Zero-Regression Protocol**. Every module from Phase 001 to Phase 100 is empirically verified.
-
-1. **RTL Validation:** `tests/` executes 491 Pytest assertions against the SystemVerilog RTL.
-2. **Precheck Compliance:** `make run-precheck` confirms absolute compliance with Efabless MPW constraints.
-3. **Timing Closure:** OpenROAD multicorner STA guarantees setup/hold closure across the min, nom, and max fabrication corners.
-
----
-**License:** SPDX-License-Identifier: Apache-2.0
++-- gds/                    # Final GDSII geometric layouts
+�   +-- user_project_wrapper.gds    (86.63 MB)
+�   +-- phase_099_top_integration.gds (85.32 MB)
++-- def/                    # DEF floorplans & routing
++-- lef/                    # LEF macro abstracts
++-- verilog/
+�   +-- rtl/                # 100 Phases of Synthesizable SystemVerilog
+�   +-- gl/                 # Post-synthesis gate-level netlists
+�   +-- dv/                 # Firmware C-code and Verilog testbenches
++-- openlane/               # OpenLane ASIC configurations (config.json)
+�   +-- user_project_wrapper/
++-- signoff/                # Efabless Precheck, LVS, and STA reports
++-- info.yaml               # Efabless machine-readable project metadata
+`
 
 ## 7. Real-World Integration & Future Roadmap
 
@@ -160,11 +210,11 @@ This SkyWater 130nm submission serves as the foundational digital-logic prototyp
 Once the physical silicon is returned from the foundry, it will be packaged and integrated onto a high-speed evaluation PCBA alongside commercial RF data converters.
 
 `mermaid
-graph LR
+flowchart LR
     subgraph RF_FRONTEND["RF Front-End"]
-        LNA[LNA / PA]
+        LNA[RF Power Amp / LNA]
         ANTENNA((Antenna))
-        LNA <--> ANTENNA
+        LNA --- ANTENNA
     end
 
     subgraph MIXED_SIGNAL["Mixed-Signal PCB"]
@@ -186,8 +236,8 @@ graph LR
     RF_ADC -->|16-bit RX Data| DSP_CORE
     DSP_CORE -->|16-bit TX Data| RF_DAC
     
-    DSP_CORE <-->|Baseband Payload| USB
-    USB <--> PC
+    DSP_CORE --- USB
+    USB --- PC
 
     style ASIC fill:#e1f5ff,stroke:#0077b6,stroke-width:2px
     style RF_FRONTEND fill:#ffe1e1,stroke:#c1121f
@@ -198,3 +248,6 @@ graph LR
 1. **Sky130 Prototype (Current):** Validate the massive 100-phase DSP pipeline, AXI-Lite register mapping, and AI DPD logic on physical CMOS at standard digital clock speeds.
 2. **IHP SG13G2 BiCMOS Port (Next-Gen):** Port the verified RTL to the open-source IHP 130nm BiCMOS PDK. Utilizing IHP's  = 250\text{ GHz}$ Heterojunction Bipolar Transistors (HBTs) will allow the digital core to natively sample RF frequencies at the mathematical target of **2.4 GSps**.
 3. **Commercial Deployment:** Package the integrated SiGe ASIC into a low-cost, ultra-wideband USB-C SDR dongle for the open-source radio community.
+
+---
+**License:** SPDX-License-Identifier: Apache-2.0
