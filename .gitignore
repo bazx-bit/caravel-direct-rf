@@ -1,0 +1,33 @@
+# Temporary & Cache files
+.pytest_cache/
+__pycache__/
+*.pyc
+*.log
+*.vvp
+*.vcd
+.system_generated/
+scratch/
+team/
+private/
+.tempmediaStorage/
+*.tmp
+
+# Caravel & Efabless Build dependencies
+/caravel/
+/caravel_full/
+/dependencies/
+/mgmt_core_wrapper/
+/venv/
+/env/
+/logs/
+/precheck_results/
+
+# IDE & OS settings
+.idea/
+.vscode/
+.DS_Store
+Thumbs.dbcaravel/
+mgmt_core_wrapper/
+dependencies/
+*.vvp
+*.vcd
