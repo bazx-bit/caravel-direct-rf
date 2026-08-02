@@ -1,4 +1,12 @@
-# Cognitive Direct-RF Sampling Transceiver – Caravel MPW Submission
+ï»¿# Cognitive Direct-RF Sampling Transceiver - Caravel MPW Submission
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License: Apache 2.0" /></a>
+  <img src="https://img.shields.io/badge/Hardware_RTL-SystemVerilog-purple.svg" alt="Hardware RTL: SystemVerilog" />
+  <img src="https://img.shields.io/badge/Verification-491%20Tests%20Passing-brightgreen.svg" alt="Verification: 491 Tests Passing" />
+  <img src="https://img.shields.io/badge/PDK-SkyWater%20130nm-orange.svg" alt="PDK: SkyWater 130nm" />
+  <img src="https://img.shields.io/badge/Fabrication-Efabless%20OpenMPW-red.svg" alt="Fabrication: Efabless OpenMPW" />
+</p>
 
 <div align="center">
   <img src="hero_image.png" alt="Cognitive RF Transceiver Silicon Layout" width="800" />
@@ -12,7 +20,7 @@
 
 > [!IMPORTANT]
 > **Architectural Scope & Honest Pre-Tapeout Disclosure:**
-> This design is a **pure digital CMOS DSP Engine** (`sky130_fd_sc_hd`). The ADC/DAC interfaces are 16-bit digital buses (`io_in`/`io_out`) designed to interface with external ultra-high-speed converters on the PCB. The 2.4 GSps direct-RF specification represents the mathematical target architecture for a future SiGe BiCMOS port; this Sky130 implementation is expected to operate at standard digital logic clock speeds (~50–100 MHz) until silicon validation is performed. No RF ENOB, SNR, or physical power metrics are claimed prior to fabrication.
+> This design is a **pure digital CMOS DSP Engine** (`sky130_fd_sc_hd`). The ADC/DAC interfaces are 16-bit digital buses (`io_in`/`io_out`) designed to interface with external ultra-high-speed converters on the PCB. The 2.4 GSps direct-RF specification represents the mathematical target architecture for a future SiGe BiCMOS port; this Sky130 implementation is expected to operate at standard digital logic clock speeds (~50â€“100 MHz) until silicon validation is performed. No RF ENOB, SNR, or physical power metrics are claimed prior to fabrication.
 
 ## 1. Project Overview
 
@@ -23,8 +31,8 @@ The **Cognitive Direct-RF Transceiver** is a massively pipelined digital signal 
 | Parameter | Specification | Implementation Details |
 |-----------|---------------|------------------------|
 | **PDK Target** | SkyWater 130nm | `sky130_fd_sc_hd` high-density standard cells |
-| **Macro Area** | 1200 µm × 1200 µm | Dense DSP routing, OpenLane hardened |
-| **Wrapper Area** | 2920 µm × 3520 µm | Standard Caravel wrapper |
+| **Macro Area** | 1200 Âµm Ã— 1200 Âµm | Dense DSP routing, OpenLane hardened |
+| **Wrapper Area** | 2920 Âµm Ã— 3520 Âµm | Standard Caravel wrapper |
 | **Logic Density** | 30,615 Gates | Pipelined arithmetic, multiply-accumulate |
 | **State Elements** | 3,142 Flip-Flops | Deep pipeline registers for high-speed fmax |
 | **Verification** | 491 Pytest Suites | 100% Zero-Regression passing status |
@@ -136,16 +144,16 @@ graph TD
 ```text
 caravel_user_project/
 +-- gds/                    # Final GDSII geometric layouts
-¦   +-- user_project_wrapper.gds    (86.63 MB)
-¦   +-- phase_099_top_integration.gds (85.32 MB)
+Â¦   +-- user_project_wrapper.gds    (86.63 MB)
+Â¦   +-- phase_099_top_integration.gds (85.32 MB)
 +-- def/                    # DEF floorplans & routing
 +-- lef/                    # LEF macro abstracts
 +-- verilog/
-¦   +-- rtl/                # 100 Phases of Synthesizable SystemVerilog
-¦   +-- gl/                 # Post-synthesis gate-level netlists
-¦   +-- dv/                 # Firmware C-code and Verilog testbenches
+Â¦   +-- rtl/                # 100 Phases of Synthesizable SystemVerilog
+Â¦   +-- gl/                 # Post-synthesis gate-level netlists
+Â¦   +-- dv/                 # Firmware C-code and Verilog testbenches
 +-- openlane/               # OpenLane ASIC configurations (config.json)
-¦   +-- user_project_wrapper/
+Â¦   +-- user_project_wrapper/
 +-- signoff/                # Efabless Precheck, LVS, and STA reports
 +-- info.yaml               # Efabless machine-readable project metadata
 ```
@@ -194,3 +202,4 @@ graph LR
 
 ---
 **License:** SPDX-License-Identifier: Apache-2.0
+
