@@ -23,10 +23,10 @@ The **Cognitive Direct-RF Transceiver** is a massively pipelined digital signal 
 | Parameter | Specification | Implementation Details |
 |-----------|---------------|------------------------|
 | **PDK Target** | SkyWater 130nm | sky130_fd_sc_hd high-density standard cells |
-| **Macro Area** | 1200 µm × 1200 µm | Dense DSP routing, OpenLane hardened |
-| **Wrapper Area** | 2920 µm × 3520 µm | Standard Caravel user_project_wrapper |
+| **Macro Area** | 1200 um x 1200 um | Dense DSP routing, OpenLane hardened |
+| **Wrapper Area** | 2920 um x 3520 um | Standard Caravel wrapper |
 | **Logic Density** | 30,615 Gates | Pipelined arithmetic, multiply-accumulate |
-| **State Elements** | 3,142 Flip-Flops | Deep pipeline registers for high-speed {max}$ |
+| **State Elements** | 3,142 Flip-Flops | Deep pipeline registers for high-speed fmax |
 | **Verification** | 491 Pytest Suites | 100% Zero-Regression passing status |
 | **Signoff Status** | Efabless Precheck | 14/14 checks passed (DRC/LVS/STA clean) |
 
@@ -37,7 +37,7 @@ This diagram maps the complete physical dataflow from the external I/O pins, thr
 
 `mermaid
 flowchart TB
-    subgraph SOC["Caravel SoC Harness (Efabless)"]
+    subgraph SOC [Caravel SoC Harness]
         CPU[PicoRV32 Management Core]
         WB[Wishbone Interconnect]
         LA[128-bit Logic Analyzer Probes]
@@ -46,18 +46,18 @@ flowchart TB
         CPU -.-> LA
     end
 
-    subgraph UPA["User Project Wrapper (Macro)"]
-        subgraph DSP_ENGINE["Cognitive Direct-RF Transceiver DSP"]
+    subgraph UPA [User Project Wrapper]
+        subgraph DSP_ENGINE [Cognitive Direct-RF Transceiver DSP]
             AXI_CTRL[AXI-Lite Config Register File]
             
-            subgraph RX_PATH["Receive Pipeline (RX)"]
+            subgraph RX_PATH [Receive Pipeline RX]
                 DDC[Digital Down Converter]
                 AGC[Auto Gain Control]
                 CORDIC_RX[CORDIC Phase Rotator]
                 FFT[256-point FFT Engine]
             end
             
-            subgraph TX_PATH["Transmit Pipeline (TX)"]
+            subgraph TX_PATH [Transmit Pipeline TX]
                 IFFT[256-point IFFT Engine]
                 DPD[Cognitive DPD Neural Net]
                 DUC[Digital Up Converter]
@@ -67,7 +67,7 @@ flowchart TB
         end
     end
     
-    subgraph IO["External Physical I/O Pads"]
+    subgraph IO [External Physical IO Pads]
         ADC[External RF ADC 16-bit]
         DAC[External RF DAC 16-bit]
         CLK[High-Speed Clock Pin]
@@ -100,7 +100,7 @@ The 100-phase DSP architecture handles mathematically intense floating-point emu
 
 `mermaid
 flowchart LR
-    subgraph RX["Receive Digital Baseband"]
+    subgraph RX [Receive Digital Baseband]
         IN1[Raw ADC Samples] --> CIC_DEC[CIC Decimator]
         CIC_DEC --> FIR_RX[FIR Compensation]
         FIR_RX --> QAM_DEMOD[QAM Demodulator]
@@ -108,7 +108,7 @@ flowchart LR
         VIT --> PKT_RX[Packet Parser]
     end
 
-    subgraph TX["Transmit Digital Baseband"]
+    subgraph TX [Transmit Digital Baseband]
         PKT_TX[MAC Framer] --> RS_ENC[Reed-Solomon]
         RS_ENC --> QAM_MOD[QAM Modulator]
         QAM_MOD --> FIR_TX[FIR Interpolator]
@@ -120,24 +120,24 @@ flowchart LR
     style TX fill:#fff0f3,stroke:#c1121f,stroke-width:2px
 `
 
-### 2.3 Cognitive Neural Processing Unit (NPU) Architecture
-To solve the nonlinear power amplifier (PA) distortion inherent in RF transmissions, this chip includes a lightweight Hardware Neural Network.
+### 2.3 Cognitive Neural Processing Unit Architecture
+To solve the nonlinear power amplifier distortion inherent in RF transmissions, this chip includes a lightweight Hardware Neural Network.
 
 `mermaid
 flowchart TD
-    subgraph NPU["Digital Predistortion (DPD) NPU"]
-        IN[Baseband I/Q Signal]
+    subgraph NPU [Digital Predistortion DPD NPU]
+        IN[Baseband Signal]
         
-        subgraph L1["Hidden Layer 1"]
+        subgraph L1 [Hidden Layer 1]
             M1[MAC Array] --> A1[ReLU Activation]
         end
         
-        subgraph L2["Hidden Layer 2"]
+        subgraph L2 [Hidden Layer 2]
             M2[MAC Array] --> A2[ReLU Activation]
         end
         
-        subgraph L3["Output Layer"]
-            M3[MAC Array] --> OUT[Linearized I/Q Signal]
+        subgraph L3 [Output Layer]
+            M3[MAC Array] --> OUT[Linearized Signal]
         end
         
         IN --> L1
@@ -145,7 +145,7 @@ flowchart TD
         L2 --> L3
     end
     
-    subgraph MEM["Weight Storage"]
+    subgraph MEM [Weight Storage]
         SRAM[Local Parameter SRAM]
     end
     
@@ -167,20 +167,20 @@ flowchart TD
 | **DSP Core** | 100-Phase Pipeline | Pure Synthesizable SystemVerilog | 100% Open-Source, highly portable, and PDK-agnostic. |
 | **Interconnect** | Wishbone & AXI-Lite | Configurable memory-mapped registers | Allows the PicoRV32 management firmware to dynamically tune the AI and RF DSP blocks at runtime. |
 | **Error Correction** | Viterbi Decoder | Pipelined hard-decision FEC | Provides extreme resilience in noisy RF channel environments. |
-| **AI Predistortion** | Cognitive NPU (DPD) | Lightweight hardware neural network | Linearizes external non-linear RF power amplifiers in real-time, boosting transmission efficiency. |
+| **AI Predistortion** | Cognitive NPU | Lightweight hardware neural network | Linearizes external non-linear RF power amplifiers in real-time, boosting transmission efficiency. |
 
 ## 4. Implementation & Timeline Recap
 
-- **Phase 1 (DSP Foundation):** Initialized the mathematical digital down-conversion, multirate filtering (CIC/FIR), and CORDIC blocks.
-- **Phase 2 (Cognitive NPU Integration):** Integrated the digital predistortion (DPD) neural network for RF linearization.
+- **Phase 1 (DSP Foundation):** Initialized the mathematical digital down-conversion, multirate filtering, and CORDIC blocks.
+- **Phase 2 (Cognitive NPU Integration):** Integrated the digital predistortion neural network for RF linearization.
 - **Phase 3 (SoC Bus Integration):** Mapped the massive 100-phase pipeline into the Caravel Wishbone interface using an AXI-Lite translation layer.
-- **Phase 4 (Physical Design):** Executed the full OpenLane ASIC flow, resolved massive routing congestion, and generated the final user_project_wrapper.gds.
+- **Phase 4 (Physical Design):** Executed the full OpenLane ASIC flow, resolved massive routing congestion, and generated the final wrappers.
 - **Phase 5 (Signoff):** Passed Efabless MPW precheck with absolute zero DRC and LVS violations.
 
 ## 5. Technical Challenges & Resolutions
 
-- **Timing & Congestion Closure:** Routing a massively pipelined FFT and Neural Network inside a tiny 1200x1200um bounding box caused severe OpenROAD routing congestion. **Resolution:** We inserted deep pipeline registers to artificially break combinatorial paths and utilized highly conservative SDC constraints to ensure timing closure across all PVT corners.
-- **GitHub Repository Limits:** The final macroscopic Silicon GDS geometries exceeded GitHub's strict 100MB HTTPS limit, crashing the initial commit pushes. **Resolution:** We completely isolated the physical layouts from the internal Efabless harness data (caravel/ and mgmt_core_wrapper/), wiped the git tree, and staged the commits sequentially.
+- **Timing & Congestion Closure:** Routing a massively pipelined FFT and Neural Network inside a tiny 1200x1200 box caused severe OpenROAD routing congestion. **Resolution:** We inserted deep pipeline registers to artificially break combinatorial paths and utilized highly conservative SDC constraints to ensure timing closure across all PVT corners.
+- **GitHub Repository Limits:** The final macroscopic Silicon GDS geometries exceeded GitHub's strict 100MB HTTPS limit, crashing the initial commit pushes. **Resolution:** We completely isolated the physical layouts from the internal Efabless harness data, wiped the git tree, and staged the commits sequentially.
 - **Verification Confidence:** Testing 100 phases of DSP hardware manually is mathematically impossible. **Resolution:** We developed a strict Zero-Regression protocol utilizing Python Golden Models. The 491 Pytest assertions prove absolute parity between the pure mathematics and the physical silicon gate-level netlists.
 
 ## 6. Directory & Artifact Structure
@@ -207,34 +207,33 @@ caravel_user_project/
 This SkyWater 130nm submission serves as the foundational digital-logic prototype for a future commercial Software Defined Radio (SDR) platform. 
 
 ### PCB Hardware Integration Plan
-Once the physical silicon is returned from the foundry, it will be packaged and integrated onto a high-speed evaluation PCBA alongside commercial RF data converters.
 
 `mermaid
 flowchart LR
-    subgraph RF_FRONTEND["RF Front-End"]
+    subgraph RF_FRONTEND [RF Front-End]
         LNA[RF Power Amp / LNA]
-        ANTENNA((Antenna))
+        ANTENNA[Physical Antenna]
         LNA --- ANTENNA
     end
 
-    subgraph MIXED_SIGNAL["Mixed-Signal PCB"]
+    subgraph MIXED_SIGNAL [Mixed-Signal PCB]
         RF_ADC[High-Speed RF ADC]
         RF_DAC[High-Speed RF DAC]
         LNA --> RF_ADC
         RF_DAC --> LNA
     end
 
-    subgraph ASIC["Our Custom ASIC (Caravel)"]
+    subgraph ASIC [Our Custom ASIC Caravel]
         DSP_CORE[100-Phase SDR DSP Core]
     end
 
-    subgraph HOST["Host System"]
+    subgraph HOST [Host System]
         USB[USB-C / PCIe Interface]
         PC[SDR Software / GNU Radio]
     end
 
-    RF_ADC -->|16-bit RX Data| DSP_CORE
-    DSP_CORE -->|16-bit TX Data| RF_DAC
+    RF_ADC --> DSP_CORE
+    DSP_CORE --> RF_DAC
     
     DSP_CORE --- USB
     USB --- PC
@@ -246,7 +245,7 @@ flowchart LR
 
 ### Strategic Roadmap
 1. **Sky130 Prototype (Current):** Validate the massive 100-phase DSP pipeline, AXI-Lite register mapping, and AI DPD logic on physical CMOS at standard digital clock speeds.
-2. **IHP SG13G2 BiCMOS Port (Next-Gen):** Port the verified RTL to the open-source IHP 130nm BiCMOS PDK. Utilizing IHP's  = 250\text{ GHz}$ Heterojunction Bipolar Transistors (HBTs) will allow the digital core to natively sample RF frequencies at the mathematical target of **2.4 GSps**.
+2. **IHP SG13G2 BiCMOS Port (Next-Gen):** Port the verified RTL to the open-source IHP 130nm BiCMOS PDK. Utilizing IHP's 250 GHz Heterojunction Bipolar Transistors will allow the digital core to natively sample RF frequencies at the mathematical target of **2.4 GSps**.
 3. **Commercial Deployment:** Package the integrated SiGe ASIC into a low-cost, ultra-wideband USB-C SDR dongle for the open-source radio community.
 
 ---
