@@ -33,10 +33,9 @@ The **Cognitive Direct-RF Transceiver** is a massively pipelined digital signal 
 ## 2. Comprehensive System Architectures
 
 ### 2.1 Top-Level SoC & Caravel Harness Integration
-This diagram maps the complete physical dataflow from the external I/O pins, through the Wishbone interconnect, and into the DSP wrapper.
 
 `mermaid
-flowchart TB
+graph TB
     subgraph SOC [Caravel SoC Harness]
         CPU[PicoRV32 Management Core]
         WB[Wishbone Interconnect]
@@ -47,24 +46,12 @@ flowchart TB
     end
 
     subgraph UPA [User Project Wrapper]
-        subgraph DSP_ENGINE [Cognitive Direct-RF Transceiver DSP]
-            AXI_CTRL[AXI-Lite Config Register File]
-            
-            subgraph RX_PATH [Receive Pipeline RX]
-                DDC[Digital Down Converter]
-                AGC[Auto Gain Control]
-                CORDIC_RX[CORDIC Phase Rotator]
-                FFT[256-point FFT Engine]
-            end
-            
-            subgraph TX_PATH [Transmit Pipeline TX]
-                IFFT[256-point IFFT Engine]
-                DPD[Cognitive DPD Neural Net]
-                DUC[Digital Up Converter]
-            end
-            
-            WB_SLAVE[Wishbone Slave Interface]
-        end
+        AXI_CTRL[AXI-Lite Config Register File]
+        DDC[Digital Down Converter]
+        FFT[256-point FFT Engine]
+        IFFT[256-point IFFT Engine]
+        DUC[Digital Up Converter]
+        WB_SLAVE[Wishbone Slave Interface]
     end
     
     subgraph IO [External Physical IO Pads]
@@ -75,89 +62,50 @@ flowchart TB
 
     WB --- WB_SLAVE
     WB_SLAVE --- AXI_CTRL
-    AXI_CTRL -.-> RX_PATH
-    AXI_CTRL -.-> TX_PATH
+    AXI_CTRL -.-> DDC
+    AXI_CTRL -.-> IFFT
     
     ADC --> DDC
-    DDC --> AGC --> CORDIC_RX --> FFT
+    DDC --> FFT
     
-    IFFT --> DPD --> DUC
+    IFFT --> DUC
     DUC --> DAC
-    CLK --> DSP_ENGINE
+    CLK --> WB_SLAVE
     
-    DSP_ENGINE -.-> LA
-
-    style SOC fill:#f9f2ec,stroke:#b08968,stroke-width:2px
-    style UPA fill:#f0f7f4,stroke:#2b9348,stroke-width:2px
-    style DSP_ENGINE fill:#ffffff,stroke:#0077b6,stroke-width:2px
-    style RX_PATH fill:#e1f5ff,stroke:#023e8a,stroke-width:2px
-    style TX_PATH fill:#ffe1e1,stroke:#c1121f,stroke-width:2px
-    style IO fill:#e9ecef,stroke:#495057
+    WB_SLAVE -.-> LA
 `
 
 ### 2.2 Deep Signal Processing Pipeline
-The 100-phase DSP architecture handles mathematically intense floating-point emulation using pipelined fixed-point arithmetic.
 
 `mermaid
-flowchart LR
-    subgraph RX [Receive Digital Baseband]
-        IN1[Raw ADC Samples] --> CIC_DEC[CIC Decimator]
-        CIC_DEC --> FIR_RX[FIR Compensation]
-        FIR_RX --> QAM_DEMOD[QAM Demodulator]
-        QAM_DEMOD --> VIT[Viterbi Decoder]
-        VIT --> PKT_RX[Packet Parser]
-    end
+graph LR
+    IN1[Raw ADC Samples] --> CIC_DEC[CIC Decimator]
+    CIC_DEC --> FIR_RX[FIR Compensation]
+    FIR_RX --> QAM_DEMOD[QAM Demodulator]
+    QAM_DEMOD --> VIT[Viterbi Decoder]
+    VIT --> PKT_RX[Packet Parser]
 
-    subgraph TX [Transmit Digital Baseband]
-        PKT_TX[MAC Framer] --> RS_ENC[Reed-Solomon]
-        RS_ENC --> QAM_MOD[QAM Modulator]
-        QAM_MOD --> FIR_TX[FIR Interpolator]
-        FIR_TX --> CIC_INC[CIC Interpolator]
-        CIC_INC --> OUT1[DAC Samples]
-    end
-
-    style RX fill:#e6f2ff,stroke:#00509e,stroke-width:2px
-    style TX fill:#fff0f3,stroke:#c1121f,stroke-width:2px
+    PKT_TX[MAC Framer] --> RS_ENC[Reed-Solomon]
+    RS_ENC --> QAM_MOD[QAM Modulator]
+    QAM_MOD --> FIR_TX[FIR Interpolator]
+    FIR_TX --> CIC_INC[CIC Interpolator]
+    CIC_INC --> OUT1[DAC Samples]
 `
 
 ### 2.3 Cognitive Neural Processing Unit Architecture
-To solve the nonlinear power amplifier distortion inherent in RF transmissions, this chip includes a lightweight Hardware Neural Network.
 
 `mermaid
-flowchart TD
-    subgraph NPU [Digital Predistortion DPD NPU]
-        IN[Baseband Signal]
-        
-        subgraph L1 [Hidden Layer 1]
-            M1[MAC Array] --> A1[ReLU Activation]
-        end
-        
-        subgraph L2 [Hidden Layer 2]
-            M2[MAC Array] --> A2[ReLU Activation]
-        end
-        
-        subgraph L3 [Output Layer]
-            M3[MAC Array] --> OUT[Linearized Signal]
-        end
-        
-        IN --> L1
-        L1 --> L2
-        L2 --> L3
-    end
+graph TD
+    IN[Baseband Signal] --> M1[Layer 1 MAC Array]
+    M1 --> A1[ReLU Activation 1]
+    A1 --> M2[Layer 2 MAC Array]
+    M2 --> A2[ReLU Activation 2]
+    A2 --> M3[Output MAC Array]
+    M3 --> OUT[Linearized Signal]
     
-    subgraph MEM [Weight Storage]
-        SRAM[Local Parameter SRAM]
-    end
-    
-    SRAM -.-> M1
+    SRAM[Local Parameter SRAM] -.-> M1
     SRAM -.-> M2
     SRAM -.-> M3
-
-    style NPU fill:#f8f9fa,stroke:#343a40,stroke-width:2px
-    style L1 fill:#e9ecef,stroke:#495057
-    style L2 fill:#e9ecef,stroke:#495057
-    style L3 fill:#e9ecef,stroke:#495057
-    style MEM fill:#ffedd8,stroke:#fca311
 `
 
 ## 3. System Components Breakdown
@@ -209,7 +157,7 @@ This SkyWater 130nm submission serves as the foundational digital-logic prototyp
 ### PCB Hardware Integration Plan
 
 `mermaid
-flowchart LR
+graph LR
     subgraph RF_FRONTEND [RF Front-End]
         LNA[RF Power Amp / LNA]
         ANTENNA[Physical Antenna]
@@ -237,10 +185,6 @@ flowchart LR
     
     DSP_CORE --- USB
     USB --- PC
-
-    style ASIC fill:#e1f5ff,stroke:#0077b6,stroke-width:2px
-    style RF_FRONTEND fill:#ffe1e1,stroke:#c1121f
-    style MIXED_SIGNAL fill:#e1ffe1,stroke:#2b9348
 `
 
 ### Strategic Roadmap
