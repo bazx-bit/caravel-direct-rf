@@ -1,4 +1,4 @@
-# Cognitive Direct-RF Sampling Transceiver ?" Caravel MPW Submission
+# Cognitive Direct-RF Sampling Transceiver – Caravel MPW Submission
 
 <div align="center">
   <img src="hero_image.png" alt="Cognitive RF Transceiver Silicon Layout" width="800" />
@@ -12,19 +12,19 @@
 
 > [!IMPORTANT]
 > **Architectural Scope & Honest Pre-Tapeout Disclosure:**
-> This design is a **pure digital CMOS DSP Engine** (sky130_fd_sc_hd). The ADC/DAC interfaces are 16-bit digital buses (io_in/io_out) designed to interface with external ultra-high-speed converters on the PCB. The 2.4 GSps direct-RF specification represents the mathematical target architecture for a future SiGe BiCMOS port; this Sky130 implementation is expected to operate at standard digital logic clock speeds (~50?"100 MHz) until silicon validation is performed. No RF ENOB, SNR, or physical power metrics are claimed prior to fabrication.
+> This design is a **pure digital CMOS DSP Engine** (`sky130_fd_sc_hd`). The ADC/DAC interfaces are 16-bit digital buses (`io_in`/`io_out`) designed to interface with external ultra-high-speed converters on the PCB. The 2.4 GSps direct-RF specification represents the mathematical target architecture for a future SiGe BiCMOS port; this Sky130 implementation is expected to operate at standard digital logic clock speeds (~50–100 MHz) until silicon validation is performed. No RF ENOB, SNR, or physical power metrics are claimed prior to fabrication.
 
 ## 1. Project Overview
 
-The **Cognitive Direct-RF Transceiver** is a massively pipelined digital signal processing (DSP) core designed for next-generation Software Defined Radios. Hardened as a single macro (phase_099_top_integration) and fully integrated into the Efabless Caravel harness, it implements 100 sequential verification phases of advanced communications IP.
+The **Cognitive Direct-RF Transceiver** is a massively pipelined digital signal processing (DSP) core designed for next-generation Software Defined Radios. Hardened as a single macro (`phase_099_top_integration`) and fully integrated into the Efabless Caravel harness, it implements 100 sequential verification phases of advanced communications IP.
 
 ### Key Specifications
 
 | Parameter | Specification | Implementation Details |
 |-----------|---------------|------------------------|
-| **PDK Target** | SkyWater 130nm | sky130_fd_sc_hd high-density standard cells |
-| **Macro Area** | 1200 um x 1200 um | Dense DSP routing, OpenLane hardened |
-| **Wrapper Area** | 2920 um x 3520 um | Standard Caravel wrapper |
+| **PDK Target** | SkyWater 130nm | `sky130_fd_sc_hd` high-density standard cells |
+| **Macro Area** | 1200 µm × 1200 µm | Dense DSP routing, OpenLane hardened |
+| **Wrapper Area** | 2920 µm × 3520 µm | Standard Caravel wrapper |
 | **Logic Density** | 30,615 Gates | Pipelined arithmetic, multiply-accumulate |
 | **State Elements** | 3,142 Flip-Flops | Deep pipeline registers for high-speed fmax |
 | **Verification** | 491 Pytest Suites | 100% Zero-Regression passing status |
@@ -34,7 +34,7 @@ The **Cognitive Direct-RF Transceiver** is a massively pipelined digital signal 
 
 ### 2.1 Top-Level SoC & Caravel Harness Integration
 
-`mermaid
+```mermaid
 graph TB
     subgraph SOC [Caravel SoC Harness]
         CPU[PicoRV32 Management Core]
@@ -73,11 +73,11 @@ graph TB
     CLK --> WB_SLAVE
     
     WB_SLAVE -.-> LA
-`
+```
 
 ### 2.2 Deep Signal Processing Pipeline
 
-`mermaid
+```mermaid
 graph LR
     IN1[Raw ADC Samples] --> CIC_DEC[CIC Decimator]
     CIC_DEC --> FIR_RX[FIR Compensation]
@@ -90,11 +90,11 @@ graph LR
     QAM_MOD --> FIR_TX[FIR Interpolator]
     FIR_TX --> CIC_INC[CIC Interpolator]
     CIC_INC --> OUT1[DAC Samples]
-`
+```
 
 ### 2.3 Cognitive Neural Processing Unit Architecture
 
-`mermaid
+```mermaid
 graph TD
     IN[Baseband Signal] --> M1[Layer 1 MAC Array]
     M1 --> A1[ReLU Activation 1]
@@ -106,7 +106,7 @@ graph TD
     SRAM[Local Parameter SRAM] -.-> M1
     SRAM -.-> M2
     SRAM -.-> M3
-`
+```
 
 ## 3. System Components Breakdown
 
@@ -133,7 +133,7 @@ graph TD
 
 ## 6. Directory & Artifact Structure
 
-`	ext
+```text
 caravel_user_project/
 +-- gds/                    # Final GDSII geometric layouts
 ¦   +-- user_project_wrapper.gds    (86.63 MB)
@@ -148,7 +148,7 @@ caravel_user_project/
 ¦   +-- user_project_wrapper/
 +-- signoff/                # Efabless Precheck, LVS, and STA reports
 +-- info.yaml               # Efabless machine-readable project metadata
-`
+```
 
 ## 7. Real-World Integration & Future Roadmap
 
@@ -156,7 +156,7 @@ This SkyWater 130nm submission serves as the foundational digital-logic prototyp
 
 ### PCB Hardware Integration Plan
 
-`mermaid
+```mermaid
 graph LR
     subgraph RF_FRONTEND [RF Front-End]
         LNA[RF Power Amp / LNA]
@@ -185,7 +185,7 @@ graph LR
     
     DSP_CORE --- USB
     USB --- PC
-`
+```
 
 ### Strategic Roadmap
 1. **Sky130 Prototype (Current):** Validate the massive 100-phase DSP pipeline, AXI-Lite register mapping, and AI DPD logic on physical CMOS at standard digital clock speeds.
