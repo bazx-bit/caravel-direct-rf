@@ -151,3 +151,50 @@ This repository strictly adheres to a **Zero-Regression Protocol**. Every module
 
 ---
 **License:** SPDX-License-Identifier: Apache-2.0
+
+## 7. Real-World Integration & Future Roadmap
+
+This SkyWater 130nm submission serves as the foundational digital-logic prototype for a future commercial Software Defined Radio (SDR) platform. 
+
+### PCB Hardware Integration Plan
+Once the physical silicon is returned from the foundry, it will be packaged and integrated onto a high-speed evaluation PCBA alongside commercial RF data converters.
+
+`mermaid
+graph LR
+    subgraph RF_FRONTEND["RF Front-End"]
+        LNA[LNA / PA]
+        ANTENNA((Antenna))
+        LNA <--> ANTENNA
+    end
+
+    subgraph MIXED_SIGNAL["Mixed-Signal PCB"]
+        RF_ADC[High-Speed RF ADC]
+        RF_DAC[High-Speed RF DAC]
+        LNA --> RF_ADC
+        RF_DAC --> LNA
+    end
+
+    subgraph ASIC["Our Custom ASIC (Caravel)"]
+        DSP_CORE[100-Phase SDR DSP Core]
+    end
+
+    subgraph HOST["Host System"]
+        USB[USB-C / PCIe Interface]
+        PC[SDR Software / GNU Radio]
+    end
+
+    RF_ADC -->|16-bit RX Data| DSP_CORE
+    DSP_CORE -->|16-bit TX Data| RF_DAC
+    
+    DSP_CORE <-->|Baseband Payload| USB
+    USB <--> PC
+
+    style ASIC fill:#e1f5ff,stroke:#0077b6,stroke-width:2px
+    style RF_FRONTEND fill:#ffe1e1,stroke:#c1121f
+    style MIXED_SIGNAL fill:#e1ffe1,stroke:#2b9348
+`
+
+### Strategic Roadmap
+1. **Sky130 Prototype (Current):** Validate the massive 100-phase DSP pipeline, AXI-Lite register mapping, and AI DPD logic on physical CMOS at standard digital clock speeds.
+2. **IHP SG13G2 BiCMOS Port (Next-Gen):** Port the verified RTL to the open-source IHP 130nm BiCMOS PDK. Utilizing IHP's  = 250\text{ GHz}$ Heterojunction Bipolar Transistors (HBTs) will allow the digital core to natively sample RF frequencies at the mathematical target of **2.4 GSps**.
+3. **Commercial Deployment:** Package the integrated SiGe ASIC into a low-cost, ultra-wideband USB-C SDR dongle for the open-source radio community.
