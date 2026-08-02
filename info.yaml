@@ -1,0 +1,24 @@
+---
+project:
+  name: "Cognitive Direct-RF Sampling Transceiver"
+  description: "100-phase Digital Baseband & DSP Engine (NCO, CIC, FIR, FFT, CORDIC, AGC, CFR, JESD204C) integrated into Caravel user_project_wrapper for Sky130 evaluation."
+  owner: "bazx-bit"
+  organization: "Open-Silicon RF Project"
+  organization_url: "https://github.com/bazx-bit"
+  author: "bazx-bit"
+  url: "https://github.com/bazx-bit/caravel-direct-rf"
+  category: "Digital / Mixed-Signal ASIC"
+  pdk: "sky130A"
+  license: "Apache-2.0"
+  tags:
+    - "transceiver"
+    - "direct-rf"
+    - "dsp"
+    - "fft"
+    - "openlane"
+    - "caravel"
+  top_level_netlist: "verilog/rtl/user_project_wrapper.v"
+  user_project_wrapper:
+    gds_path: "gds/user_project_wrapper.gds"
+    lef_path: "lef/user_project_wrapper.lef"
+    def_path: "def/user_project_wrapper.def"

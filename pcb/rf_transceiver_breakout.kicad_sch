@@ -1,0 +1,25 @@
+(kicad_sch (version 20211123) (generator eeschema)
+
+  (paper "A4")
+
+  (title_block
+    (title "Cognitive Direct-RF Transceiver Breakout Board")
+    (company "Open-Silicon RF Project")
+    (rev "v1.0.0")
+  )
+
+  (lib_symbols
+    (symbol "Caravel_QFN64" (in_bom yes) (on_board yes)
+      (property "Reference" "U1" (id 0) (at -10.16 22.86 0))
+      (property "Value" "Caravel_QFN64_SoC" (id 1) (at 2.54 22.86 0))
+      (property "Footprint" "Package_DFN_QFN:QFN-64-1EP_9x9mm_P0.5mm_EP7.15x7.15mm" (id 2) (at 0 0 0))
+    )
+  )
+
+  (symbol (lib_id "Caravel_QFN64") (at 127 101.6 0) (unit 1)
+    (in_bom yes) (on_board yes)
+    (uuid "00000000-0000-0000-0000-000062a4b3d1")
+    (property "Reference" "U1" (at 127 76.2 0))
+    (property "Value" "Caravel_QFN64_SoC" (at 127 78.74 0))
+  )
+)
