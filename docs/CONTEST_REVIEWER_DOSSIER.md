@@ -32,9 +32,8 @@ caravel_user_project/
 │   ├── PRECHECK_VERIFICATION_REPORT.md (DRC/LVS & Signoff Summary)
 │   ├── TIMING_SLEW_WAIVER.md          (Engineering Waiver Justification)
 │   └── POST_SILICON_VALIDATION_PLAN.md (Post-Silicon Testing & Instruments)
-├── scripts/
-│   └── run_caravel_dv.py              (Automated Docker Simulation Runner)
-└── AI_SESSION_LOGS.md                 (Full Prompt & Trajectory Logs)
+└── scripts/
+    └── run_caravel_dv.py              (Automated Docker Simulation Runner)
 ```
 
 ---
